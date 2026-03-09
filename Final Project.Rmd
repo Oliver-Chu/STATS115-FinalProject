@@ -1,0 +1,105 @@
+---
+title: "Final Project"
+output: pdf_document
+date: "2026-03-07"
+---
+
+```{r library}
+library(dplyr)
+library(rstan)
+```
+
+```{r source}
+data <- read.csv("earthquake.csv")
+head(data)
+```
+
+```{r cleaning}
+earthquake <- data[, c("time", "mag")]
+earthquake$datetime <- as.POSIXct(earthquake$time, format = "%Y-%m-%dT%H:%M:%OSZ", tz = "UTC")
+earthquake <- earthquake[order(earthquake$datetime), ]
+earthquake$intertime <- c(NA, as.numeric(
+  difftime(earthquake$datetime[-1],earthquake$datetime[-nrow(earthquake)], units="days")))
+earthquake$Display <- round(earthquake$intertime, 2)
+head(earthquake)
+```
+
+```{r parameters}
+tObs <- earthquake$intertime[!is.na(earthquake$intertime)]
+n <- length(tObs)
+sum <- sum(earthquake$intertime, na.rm = TRUE)
+lastDate <- max(earthquake$date)
+xDay <- as.numeric(difftime(Sys.Date(), lastDate, units="days"))
+
+#theta ~ Gamma(a,b) prior
+a = 2
+b = 365
+#posterior
+aPost <- a + 2*n
+bPost <- b + sum
+```
+
+```{r model}
+model <- "
+data {
+  int<lower=1> N;
+  vector<lower=0>[N] T;
+}
+parameters {
+  real<lower=0> theta;
+}
+model {
+  T ~ gamma(2, theta);
+  theta ~ gamma(2, 365);
+}
+"
+```
+
+```{r MCMC}
+simulation <- stan(model_code=model, data=list(N = n, T = tObs),
+                   chains=4, iter=5000*2, seed=1234,
+                   refresh=FALSE)
+bayesplot::mcmc_trace(simulation, pars="theta", size=0.5)
+bayesplot::mcmc_hist(simulation, pars="theta")
+```
+```{r summary}
+summary(simulation, pars="theta")
+```
+
+
+
+```{r density}
+priorTheta <- rgamma(10000, shape = a, rate = b)
+postTheta <- as.data.frame(simulation, pars = "theta")$theta
+plot(density(priorTheta), lwd = 3, col = "black",
+     xlab = expression(theta), ylab = "Density",
+     main = expression("Prior and Posterior of " * theta))
+lines(density(postTheta), lwd = 3, col = "red")
+legend("topright", legend = c("Prior", "Posterior"), col = c("black", "red"), lwd = 3)
+```
+
+```{r predictiveInterval}
+remainDays <- (xDay + 2/postTheta) / (1+postTheta*xDay)
+summary(remainDays)
+
+hist(remainDays, prob=TRUE, col="gray80",
+     xlab="days",
+     main="Posterior Preditive Remaining Time til Next Earthquake")
+abline(v=mean(remainDays), col="red", lwd=3)
+```
+Given `r xDay`days have passed since the last M8+ earthquake worldwide, the expected remaining waiting time until the next one is about `r mean(remainDays)`days. 
+
+```{r daysProb}
+daysVec <- quantile(remainDays, probs = c(0, 0.25, 0.5, 0.75, 1))
+
+sapply(daysVec, function(d) {
+  probInDays <- (
+    pgamma(xDay + d, shape = 2, rate = postTheta) -
+    pgamma(xDay, shape = 2, rate = postTheta)
+  ) / (
+    1 - pgamma(xDay, shape = 2, rate = postTheta)
+  )
+  mean(probInDays)
+})
+```
+
