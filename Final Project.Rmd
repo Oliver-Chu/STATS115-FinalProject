@@ -61,6 +61,7 @@ simulation <- stan(model_code=model, data=list(N = n, T = tObs),
                    refresh=FALSE)
 bayesplot::mcmc_trace(simulation, pars="theta", size=0.5)
 bayesplot::mcmc_hist(simulation, pars="theta")
+bayesplot::mcmc_dens_overlay(simulation, pars = "theta")
 ```
 ```{r summary}
 summary(simulation, pars="theta")
@@ -76,6 +77,9 @@ plot(density(priorTheta), lwd = 3, col = "black",
      main = expression("Prior and Posterior of " * theta))
 lines(density(postTheta), lwd = 3, col = "red")
 legend("topright", legend = c("Prior", "Posterior"), col = c("black", "red"), lwd = 3)
+
+cred_int_95 <- quantile(postTheta, probs = c(0.025, 0.975))
+head(cred_int_95)
 ```
 
 ```{r predictiveInterval}
@@ -86,7 +90,56 @@ hist(remainDays, prob=TRUE, col="gray80",
      xlab="days",
      main="Posterior Preditive Remaining Time til Next Earthquake")
 abline(v=mean(remainDays), col="red", lwd=3)
+
+df_remain <- data.frame(days = remainDays)
+
+ggplot(df_remain, aes(x = days)) +
+  geom_density() +
+  labs(title = "Posterior Predictive Remaining Time",
+       subtitle = "Days until next earthquake, given time already elapsed",
+       x = "Remaining Days",
+       y = "Density")
 ```
+
+```{r SANITY CHECK FOR PREDICTION}
+#this is graph is prediction interval relative to last earthquake that happened
+library(ggplot2)
+check_sim <- as.data.frame(simulation)
+check_sim <- check_sim %>%
+  mutate(y_predict = rgamma(n = n(), shape = 2, rate = theta))
+
+ggplot(check_sim, aes(x = y_predict)) + 
+  geom_density() +
+  labs(title = "Posterior Predictive Distribution (Time from last earthqake)",
+       x = "Predicted Days until Next Earthquake",
+       y = "Density")
+
+prediction_int <- quantile(check_sim$y_predict, probs = c(0.025, 0.975))
+head(prediction_int)
+```
+```{r SANITY CHECK FOR PREDICTION}
+#this is graph is prediction interval relative today
+check_sim <- check_sim %>% 
+  mutate(days_from_today = y_predict - xDay)
+
+check_sim_future <- check_sim %>% 
+  filter(days_from_today > 0)
+
+head(check_sim_future)
+
+ggplot(check_sim_future, aes(x = days_from_today)) +
+  geom_density() +
+  labs(title = "Predicted Days UNTIL Next Earthquake (From Today)",
+       x = "Days from Now",
+       y = "Density")
+prediction_int_today <- quantile(check_sim_future$days_from_today, probs = c(0.025, 0.975))
+head(prediction_int_today)
+```
+
+```{r posterior odds, prior odds, and Bayes Factor?}
+#should we include this?
+```
+
 Given `r xDay`days have passed since the last M8+ earthquake worldwide, the expected remaining waiting time until the next one is about `r mean(remainDays)`days. 
 
 ```{r daysProb}
