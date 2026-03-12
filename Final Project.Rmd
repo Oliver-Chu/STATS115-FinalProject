@@ -7,10 +7,50 @@ date: "2026-03-07"
 ```{r library}
 library(dplyr)
 library(rstan)
+library(tidyverse)
+library(bayesrules)
+library(MASS)
 ```
 
+```{r priorData}
+prior_eqs <- read_csv("data/earthquakes_before_1950.csv")
+
+prior <- prior_eqs[, c("time", "mag")]
+prior$datetime <- as.POSIXct(prior$time, format = "%Y-%m-%dT%H:%M:%OSZ", tz = "UTC")
+prior <- prior[order(prior$datetime), ]
+prior$intertime <- c(NA, as.numeric(
+  difftime(prior$datetime[-1],prior$datetime[-nrow(prior)], units="days")))
+prior$Display <- round(prior$intertime, 2)
+head(prior, 1)
+```
+
+```{r priorParams}
+between_time <- prior$intertime[!is.na(prior$intertime)]
+
+prior_data_filtered <- between_time[between_time > 80]
+fit <- fitdistr(prior_data_filtered, "gamma")
+
+shape <- fit$estimate["shape"]
+rate  <- fit$estimate["rate"]
+
+ggplot(data.frame(T = between_time), aes(x = T)) +
+  geom_histogram(aes(y = ..density..), bins = 40, fill = "grey") +
+  stat_function(fun = dgamma,
+                args = list(shape = shape, rate = rate),
+                color = "red",
+                linewidth = 1) +
+  labs(
+    title = "Gamma Fit to Pre-1950 Inter-event Times",
+    x = "Days Between Earthquakes",
+    y = "Density"
+  )
+
+c(shape, rate)
+```
+
+
 ```{r source}
-data <- read.csv("earthquake.csv")
+data <- read.csv("data/earthquake.csv")
 head(data)
 ```
 
@@ -32,8 +72,8 @@ lastDate <- max(earthquake$date)
 xDay <- as.numeric(difftime(Sys.Date(), lastDate, units="days"))
 
 #theta ~ Gamma(a,b) prior
-a = 2
-b = 365
+a = shape
+b = rate
 #posterior
 aPost <- a + 2*n
 bPost <- b + sum
@@ -50,7 +90,7 @@ parameters {
 }
 model {
   T ~ gamma(2, theta);
-  theta ~ gamma(2, 365);
+  theta ~ gamma(0.744243616, 0.001660539);
 }
 "
 ```
@@ -74,9 +114,19 @@ priorTheta <- rgamma(10000, shape = a, rate = b)
 postTheta <- as.data.frame(simulation, pars = "theta")$theta
 plot(density(priorTheta), lwd = 3, col = "black",
      xlab = expression(theta), ylab = "Density",
-     main = expression("Prior and Posterior of " * theta))
+     main = expression("Prior and Posterior of " * theta), 
+     ylim = range(c(0, 1000)))
 lines(density(postTheta), lwd = 3, col = "red")
 legend("topright", legend = c("Prior", "Posterior"), col = c("black", "red"), lwd = 3)
+
+plot(density(priorTheta), lwd = 3, col = "black",
+     xlab = expression(theta), ylab = "Density",
+     main = expression("Prior of " * theta))
+
+plot(density(postTheta), lwd = 3, col = "red",
+     xlab = expression(theta), ylab = "Density",
+     main = expression("Posterior of " * theta), 
+     ylim = range(c(0, 1000)))
 
 cred_int_95 <- quantile(postTheta, probs = c(0.025, 0.975))
 head(cred_int_95)
@@ -117,6 +167,7 @@ ggplot(check_sim, aes(x = y_predict)) +
 prediction_int <- quantile(check_sim$y_predict, probs = c(0.025, 0.975))
 head(prediction_int)
 ```
+
 ```{r SANITY CHECK FOR PREDICTION}
 #this is graph is prediction interval relative today
 check_sim <- check_sim %>% 

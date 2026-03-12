@@ -1,0 +1,50 @@
+---
+title: "STATS 115 Final Project: Predicting the Next Big Earthquake"
+author: "Group 8: Rean Du, Oliver Chu, Daniel Ernesto Santos, Keerthana Girish" 
+format: revealjs
+---
+
+## Introduction to the Project
+
+-   EARTHQUAKES
+-   MAG 8.0 or greater --> super destructive
+-   would be nice to be able to predict around when the next mag 8 earthquake will be so earthquake prone areas can prepare.
+
+
+## Our Project Goal (proposal Question)
+
+When you click the **Render** button a document will be generated that includes:
+
+-   Content authored with markdown
+-   Output from executable code
+
+## Prior Info / Any Research about prior stuff
+
+When you click the **Render** button a presentation will be generated that includes both content and the output of embedded code. You can embed code like this:
+
+```{r}
+1 + 1
+```
+
+## Model
+T = Time (in Days) between Two Consecutive Earthquakes
+$$T_i \sim Gamma(2, \theta)$$
+-  $T_i$: waiting time between 2 earthquakes  
+-   2: number of stress accumulation stages  
+-   $\theta$: scale that shows the duration of each stage  
+$$\theta \sim Gamma(a, b)$$
+-   a: shape taken from prior data  
+-   b: rate taken from prior data  
+
+## How we created the prior
+
+## How we created the likelihood
+
+## Posterior
+
+## Predictions
+
+## How well our model works
+
+## What can be done in the future
+
