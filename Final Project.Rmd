@@ -10,6 +10,9 @@ library(rstan)
 library(tidyverse)
 library(bayesrules)
 library(MASS)
+library(rstanarm)
+library(ggplot2)
+library(bayesplot)
 ```
 
 ```{r priorData}
@@ -151,9 +154,8 @@ ggplot(df_remain, aes(x = days)) +
        y = "Density")
 ```
 
-```{r SANITY CHECK FOR PREDICTION}
+```{r prediction pre-transformation}
 #this is graph is prediction interval relative to last earthquake that happened
-library(ggplot2)
 check_sim <- as.data.frame(simulation)
 check_sim <- check_sim %>%
   mutate(y_predict = rgamma(n = n(), shape = 2, rate = theta))
@@ -165,10 +167,16 @@ ggplot(check_sim, aes(x = y_predict)) +
        y = "Density")
 
 prediction_int <- quantile(check_sim$y_predict, probs = c(0.025, 0.975))
-head(prediction_int)
+
+ggplot() +
+  geom_density(aes(x = tObs, color = "Observed Data")) +
+  geom_density(aes(x = check_sim$y_predict, color = "Model Prediction")) +
+  labs(title = "Model Fit Check", x = "Days between Earthquakes", y = "Density") +
+  scale_color_manual(values = c("Observed Data" = "black", "Model Prediction" = "red"))
+
 ```
 
-```{r SANITY CHECK FOR PREDICTION}
+```{r prediction post-transformation}
 #this is graph is prediction interval relative today
 check_sim <- check_sim %>% 
   mutate(days_from_today = y_predict - xDay)
@@ -183,8 +191,7 @@ ggplot(check_sim_future, aes(x = days_from_today)) +
   labs(title = "Predicted Days UNTIL Next Earthquake (From Today)",
        x = "Days from Now",
        y = "Density")
-prediction_int_today <- quantile(check_sim_future$days_from_today, probs = c(0.025, 0.975))
-head(prediction_int_today)
+prediction_int_today <- quantile(check_sim_future$days_from_today, probs = c(0.025, 0.5, 0.975))
 ```
 
 ```{r posterior odds, prior odds, and Bayes Factor?}
