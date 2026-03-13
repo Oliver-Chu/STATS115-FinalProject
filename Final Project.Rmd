@@ -27,14 +27,17 @@ prior$Display <- round(prior$intertime, 2)
 head(prior, 1)
 ```
 
-```{r priorParams}
+```{r priorParamsT}
+#T ~ Gamma(2, theta)
 between_time <- prior$intertime[!is.na(prior$intertime)]
 
-prior_data_filtered <- between_time[between_time > 80]
-fit <- fitdistr(prior_data_filtered, "gamma")
+#E(T)
+E_T <- mean(between_time)
 
-shape <- fit$estimate["shape"]
-rate  <- fit$estimate["rate"]
+shape = 2
+#E(T) = shape/rate
+rate <- 2/E_T
+
 
 ggplot(data.frame(T = between_time), aes(x = T)) +
   geom_histogram(aes(y = ..density..), bins = 40, fill = "grey") +
@@ -49,6 +52,20 @@ ggplot(data.frame(T = between_time), aes(x = T)) +
   )
 
 c(shape, rate)
+```
+
+
+```{r PriorParamsTheta}
+theta_exp <- rate
+theta_var <- theta_exp^2 / 5
+#theta_exp = a/b
+#theta_var = a/b^2
+b <- theta_exp / theta_var
+a <- theta_exp * b
+
+plot_gamma(a, b)
+
+
 ```
 
 
@@ -75,8 +92,7 @@ lastDate <- max(earthquake$date)
 xDay <- as.numeric(difftime(Sys.Date(), lastDate, units="days"))
 
 #theta ~ Gamma(a,b) prior
-a = shape
-b = rate
+c(a, b)
 #posterior
 aPost <- a + 2*n
 bPost <- b + sum
@@ -93,7 +109,7 @@ parameters {
 }
 model {
   T ~ gamma(2, theta);
-  theta ~ gamma(0.744243616, 0.001660539);
+  theta ~ gamma(5.0, 1120.523);
 }
 "
 ```
@@ -106,6 +122,7 @@ bayesplot::mcmc_trace(simulation, pars="theta", size=0.5)
 bayesplot::mcmc_hist(simulation, pars="theta")
 bayesplot::mcmc_dens_overlay(simulation, pars = "theta")
 ```
+
 ```{r summary}
 summary(simulation, pars="theta")
 ```
