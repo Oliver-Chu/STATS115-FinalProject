@@ -4,47 +4,115 @@ author: "Group 8: Rean Du, Oliver Chu, Daniel Ernesto Santos, Keerthana Girish"
 format: revealjs
 ---
 
-## Introduction to the Project
-
--   EARTHQUAKES
--   MAG 8.0 or greater --> super destructive
--   would be nice to be able to predict around when the next mag 8 earthquake will be so earthquake prone areas can prepare.
-
-
-## Our Project Goal (proposal Question)
-
-When you click the **Render** button a document will be generated that includes:
-
--   Content authored with markdown
--   Output from executable code
-
-## Prior Info / Any Research about prior stuff
-
-When you click the **Render** button a presentation will be generated that includes both content and the output of embedded code. You can embed code like this:
-
-```{r}
-1 + 1
+```{r setup, include=FALSE}
+library(dplyr)
+library(rstan)
+library(tidyverse)
+library(bayesrules)
+library(MASS)
+library(rstanarm)
+library(ggplot2)
+library(bayesplot)
 ```
 
-## Model
-T = Time (in Days) between Two Consecutive Earthquakes
-$$T_i \sim Gamma(2, \theta)$$
--  $T_i$: waiting time between 2 earthquakes  
+
+```{r loadData, include=FALSE}
+prior_eqs <- read_csv("data/earthquakes_before_1950.csv")
+
+prior <- prior_eqs[, c("time", "mag")]
+prior$datetime <- as.POSIXct(prior$time, format = "%Y-%m-%dT%H:%M:%OSZ", tz = "UTC")
+prior <- prior[order(prior$datetime), ]
+prior$intertime <- c(NA, as.numeric(
+  difftime(prior$datetime[-1],prior$datetime[-nrow(prior)], units="days")))
+prior$Display <- round(prior$intertime, 2)
+```
+
+
+## Introduction to the Project
+
+- Large earthquakes are rare but extremely destructive
+- Predicting *when* the next one might occur is very difficult
+- Even rough estimates can help with:
+  - disaster preparedness
+  - infrastructure planning
+  - risk assessment
+
+Is it possible to use past earthquake data to predict when the next one could happen?
+
+
+## Our Project Goal (Proposal Question)
+
+-  What is the expected waiting time until the next earthquake with magnitude above 8 happens worldwide given observed inter-event times?
+-  What is the probability that the next earthquake will occur within a specific time window?
+
+
+## Data
+
+- Global earthquakes with magnitude ≥ 8 taken from USGS website
+- Converted into inter-event times (time between earthquakes)
+- Split into:
+  - Pre-1950 → used for prior
+  - Post-1950 → used for likelihood
+
+## Challenges
+- Small number of observations (rare events)
+- Potential missing or inconsistent historical records
+- Assumes independence between events
+
+
+## Model Choice
+We decided to model inter-event times as $T_i$:
+$$T_i|\theta \sim Gamma(2, \theta)$$
+-  $T_i$: waiting time (in days) between 2 earthquakes  
 -   2: number of stress accumulation stages  
 -   $\theta$: scale that shows the duration of each stage  
-$$\theta \sim Gamma(a, b)$$
--   a: shape taken from prior data  
--   b: rate taken from prior data  
 
-## How we created the prior
+### Why Gamma?
+- Gamma can model waiting times
+- Flexible shape
+- Captures multi-stage processes
 
-## How we created the likelihood
+## Prior for θ
 
-## Posterior
+- Built using pre-1950 earthquake data
+- Shape fixed at 2
+- Estimated rate from mean inter-event time -> mean value of all inter-event times = E(T)
+  - $\theta = \frac{2}{E(T)}$
+
+- Prior reflects historical seismic behavior before modern data
+- Used expected value $\theta$ to find the shape and rate of gamma distribution for $'theta$: $\theta \sim Gamma(a, b)$
+
+
+## Bayesian Model
+
+Prior:
+$$
+\theta \sim Gamma(a,b)
+$$
+
+Likelihood:
+$$
+T_i | \theta \sim Gamma(2,\theta)
+$$
+
+Posterior:
+$$
+p(\theta|T) \propto p(T|\theta)p(\theta)
+$$
+
+## Results of MCMC
 
 ## Predictions
 
-## How well our model works
+## Interpretation
 
-## What can be done in the future
+## Future possibilities
+
+- Model earthquakes by region and fault line
+- Use hierarchical Bayesian models
+- Include time-varying behavior
+
+Goal: build a more realistic and predictive model
+
+## Conclusion
 
