@@ -191,6 +191,7 @@ ggplot() +
   labs(title = "Model Fit Check", x = "Days between Earthquakes", y = "Density") +
   scale_color_manual(values = c("Observed Data" = "black", "Model Prediction" = "red"))
 
+prediction_int
 ```
 
 ```{r prediction post-transformation}
