@@ -166,13 +166,13 @@ cat("<p style='font-size:0.45em; color:gray; position:absolute; bottom:5px;'><su
 
 ::: {.columns}
 ::: {.column width="50%"}
-**Step 1:** From pre-1950 data, estimate $\hat{\theta}$:
+**Step 1:** From pre-1950 data, estimate $\widehat{\theta}$:
 
-$$E(T) = \frac{\alpha}{\theta} = \frac{2}{\theta} \implies \hat{\theta} = \frac{2}{E(T)} \approx `r round(rate, 5)`$$
+$$E(T) = \frac{\alpha}{\theta} = \frac{2}{\theta} \implies \widehat{\theta} = \frac{2}{E(T)} \approx `r round(rate, 5)`$$
 
 **Step 2:** Encode as a Gamma prior with controlled variance:
 
-$$\text{Var}(\theta) = \frac{\hat{\theta}^2}{5} \approx `r formatC(theta_var, format="e", digits=2)`$$
+$$\text{Var}(\theta) = \frac{{\widehat{\theta}}^{\,2}}{5} \approx `r formatC(theta_var, format="e", digits=2)`$$
 
 Solving $E(\theta) = a/b$ and $\text{Var}(\theta) = a/b^2$:
 
@@ -187,6 +187,8 @@ cat("<p style='font-size:0.60em; color:gray; margin-top:-10px;'>Fig 3. Prior dis
 ```
 :::
 :::
+
+
 
 ## MCMC
 
