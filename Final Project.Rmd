@@ -171,7 +171,7 @@ ggplot(df_remain, aes(x = days)) +
        y = "Density")
 ```
 
-```{r prediction pre-transformation}
+```{r posterior prediction}
 #this is graph is prediction interval relative to last earthquake that happened
 check_sim <- as.data.frame(simulation)
 check_sim <- check_sim %>%
@@ -192,28 +192,6 @@ ggplot() +
   scale_color_manual(values = c("Observed Data" = "black", "Model Prediction" = "red"))
 
 prediction_int
-```
-
-```{r prediction post-transformation}
-#this is graph is prediction interval relative today
-check_sim <- check_sim %>% 
-  mutate(days_from_today = y_predict - xDay)
-
-check_sim_future <- check_sim %>% 
-  filter(days_from_today > 0)
-
-head(check_sim_future)
-
-ggplot(check_sim_future, aes(x = days_from_today)) +
-  geom_density() +
-  labs(title = "Predicted Days UNTIL Next Earthquake (From Today)",
-       x = "Days from Now",
-       y = "Density")
-prediction_int_today <- quantile(check_sim_future$days_from_today, probs = c(0.025, 0.5, 0.975))
-```
-
-```{r posterior odds, prior odds, and Bayes Factor?}
-#should we include this?
 ```
 
 Given `r xDay`days have passed since the last M8+ earthquake worldwide, the expected remaining waiting time until the next one is about `r mean(remainDays)`days. 
