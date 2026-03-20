@@ -256,61 +256,6 @@ The `r n` observed inter-event times concentrate the posterior around $\theta \a
 
 
 
-## Posterior Derivation
-
-The Gamma prior is **conjugate** to the Gamma likelihood, giving a closed-form posterior:
-
-| | Distribution |
-|---|---|
-| **Prior** | $\theta \sim \text{Gamma}(a,\; b)$ |
-| **Likelihood** | $L(\theta) = \prod_{i=1}^n \theta^2 t_i e^{-\theta t_i} \;\propto\; \theta^{2n}\, e^{-\theta \sum t_i}$ |
-| **Posterior** | $\theta \mid \mathbf{t} \sim \text{Gamma}\!\left(a + 2n,\;\; b + \sum t_i\right)$ |
-
-&nbsp;
-
-Plugging in our values:
-
-$$\theta \mid \mathbf{t} \sim \text{Gamma}\!\left(`r round(a, 1)` + 2(`r n`) ,\;\; `r round(b, 1)` + `r round(sum_t, 1)`\right) = \text{Gamma}(`r round(aPost, 1)`,\; `r round(bPost, 1)`)$$
-
-The closed-form posterior mean is:
-
-$$E[\theta \mid \mathbf{t}] = \frac{a + 2n}{b + \sum t_i} = \frac{`r round(aPost, 1)`}{`r round(bPost, 1)`} \approx `r round(aPost / bPost, 5)`$$
-
-This matches the MCMC posterior mean ($\approx$ `r round(mean(postTheta), 5)`), confirming the sampler converged correctly.
-
-
-
-
-
-## Posterior Predictive
-
-We draw predicted inter-event times from $T^* \mid \theta \sim \text{Gamma}(2, \theta)$ for each posterior sample of $\theta$, producing a posterior predictive distribution. 
-
-::: {.columns}
-::: {.column width="50%"}
-```{r model-check, echo=FALSE, fig.height=5, fig.width=5}
-ggplot() +
-  geom_density(aes(x = tObs, color = "Observed Data"), linewidth = 1) +
-  geom_density(aes(x = check_sim$y_predict, color = "Posterior Predictive"), linewidth = 1) +
-  labs(title = "Observed vs. Posterior Predictive",
-       x = "Days Between Earthquakes", y = "Density") +
-  scale_color_manual(values = c("Observed Data" = "black", "Posterior Predictive" = "red")) +
-  theme_minimal() +
-  theme(legend.title = element_blank(), legend.position = "bottom")
-```
-```{r fig7-caption, echo=FALSE, results='asis'}
-cat("<p style='font-size:0.60em; color:gray; margin-top:-10px;'>Fig 7. Observed inter-event time density (black) overlaid with the posterior predictive distribution (red).</p>")
-```
-:::
-::: {.column width="50%"}
-The two distributions share similar shape and scale, supporting the Gamma(2, $\theta$) model as a reasonable fit.
-
-&nbsp;
-
-:::
-:::
-
-
 
 ## Conditional Prediction: Expected Remaining Time
 
@@ -332,7 +277,7 @@ ggplot(df_remain, aes(x = days)) +
   theme_minimal()
 ```
 ```{r fig6-caption, echo=FALSE, results='asis'}
-cat("<p style='font-size:0.60em; color:gray; margin-top:-10px;'>Fig 8. Posterior predictive distribution of remaining wait time, conditioned on elapsed days since last M8+ event.</p>")
+cat("<p style='font-size:0.60em; color:gray; margin-top:-10px;'>Fig 7. Posterior predictive distribution of remaining wait time, conditioned on elapsed days since last M8+ event.</p>")
 ```
 :::
 ::: {.column width="50%"}
@@ -398,4 +343,4 @@ As elapsed time grows, the conditional probability within any fixed window *incr
 
 - Assumes independence between successive earthquakes
 - Fixed shape parameter ($\alpha = 2$) across all events
-- Make prediction of actual wait time conditional
+- Account for specific locations
