@@ -390,9 +390,9 @@ As elapsed time grows, the conditional probability within any fixed window *incr
 
 **Key Findings:**
 
-Given `r round(xDay)` days since the last M8+ earthquake, our Bayesian model estimates the **expected remaining wait is ~`r round(mean(remainDays))` days**, with a 95% credible interval for $\theta$ of (`r round(cred_int_95[1], 4)`, `r round(cred_int_95[2], 4)`).
+**Q1.** Given `r round(xDay)` days since the last M8+ earthquake, the conditional expected remaining wait is **~`r round(mean(remainDays))` days**.
 
-Because the Gamma(2, $\theta$) distribution has an increasing hazard rate, **the longer we wait, the higher the probability** of an earthquake in the near future.
+**Q2.** The conditional probability of an M8+ earthquake within one year from today is approximately `r round(probs[which(daysCheck == 365)] * 100, 1)`%, rising to `r round(probs[which(daysCheck == 730)] * 100, 1)`% within two years, reflecting the increasing hazard of the Gamma(2, $\theta$) model.
 
 &nbsp;
 
