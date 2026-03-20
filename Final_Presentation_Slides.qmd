@@ -339,11 +339,9 @@ cat("<p style='font-size:0.60em; color:gray; margin-top:-10px;'>Fig 8. Posterior
 
 | Quantile | Remaining Days |
 |----------|---------------|
-| Min | `r round(min(remainDays))` |
-| 25th | `r round(quantile(remainDays, 0.25))` |
-| Median | `r round(median(remainDays))` |
-| 75th | `r round(quantile(remainDays, 0.75))` |
-| Max | `r round(max(remainDays))` |
+| 2.5% | `r round(quantile(remainDays, 0.025))` |
+| 50% | `r round(quantile(remainDays, 0.5))` |
+| 97.5% | `r round(quantile(remainDays, 0.975))` |
 
 With `r round(xDay)` days elapsed, the expected remaining wait is **~`r round(mean(remainDays))` days**, averaged over the full posterior of $\theta$.
 :::
@@ -390,7 +388,7 @@ As elapsed time grows, the conditional probability within any fixed window *incr
 
 **Key Findings:**
 
-**Q1.** Given `r round(xDay)` days since the last M8+ earthquake, the conditional expected remaining wait is **~`r round(mean(remainDays))` days**.
+**Q1.** Given `r round(xDay)` days since the last M8+ earthquake, the conditional expected remaining wait is **~`r round(mean(remainDays))` days** (95% CI: `r round(quantile(remainDays, 0.025))` - `r round(quantile(remainDays, 0.975))` days).
 
 **Q2.** The conditional probability of an M8+ earthquake within one year from today is approximately `r round(probs[which(daysCheck == 365)] * 100, 1)`%, rising to `r round(probs[which(daysCheck == 730)] * 100, 1)`% within two years, reflecting the increasing hazard of the Gamma(2, $\theta$) model.
 
