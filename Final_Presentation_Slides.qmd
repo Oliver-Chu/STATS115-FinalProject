@@ -307,10 +307,6 @@ The two distributions share similar shape and scale, supporting the Gamma(2, $\t
 
 &nbsp;
 
-A secondary peak around 1000–1200 days in the observed data is not captured by the unimodal posterior predictive; this likely reflects temporal clustering that a single-rate model cannot account for.
-
-&nbsp;
-
 :::
 :::
 
@@ -404,4 +400,4 @@ Because the Gamma(2, $\theta$) distribution has an increasing hazard rate, **the
 
 - Assumes independence between successive earthquakes
 - Fixed shape parameter ($\alpha = 2$) across all events
-- Constant rate: does not account for temporal clustering or changing seismicity
+- Make prediction of actual wait time conditional
