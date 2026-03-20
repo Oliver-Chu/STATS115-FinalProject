@@ -101,7 +101,7 @@ Earthquakes of magnitude 8 or above occur roughly once per year worldwide. Despi
 ::: {.column width="55%"}
 We address two questions using Bayesian inference on historical USGS data:
 
-**Q1.** Given `r round(xDay)` days have elapsed since the last M8+ earthquake, what is the expected remaining waiting time?
+**Q1.** Given $x$ days have elapsed since the last M8+ earthquake, what is the expected remaining waiting time?
 
 **Q2.** What is the probability the next M8+ earthquake occurs within $d$ days from now?
 
@@ -259,7 +259,7 @@ The `r n` observed inter-event times concentrate the posterior around $\theta \a
 
 ## Conditional Prediction: Expected Remaining Time
 
-Because Gamma(2, $\theta$) is not memoryless, we condition on elapsed time $x$:
+Given $x$ days have elapsed since the last M8+ earthquake, what is the expected remaining waiting time?
 
 $$E[T - x \mid T > x,\; \theta] = \frac{x + \frac{2}{\theta}}{1 + \theta x}$$
 
@@ -288,7 +288,7 @@ cat("<p style='font-size:0.60em; color:gray; margin-top:-10px;'>Fig 7. Posterior
 | 50% | `r round(quantile(remainDays, 0.5))` |
 | 97.5% | `r round(quantile(remainDays, 0.975))` |
 
-With `r round(xDay)` days elapsed, the expected remaining wait is **~`r round(mean(remainDays))` days**, averaged over the full posterior of $\theta$.
+With `r round(xDay)` days elapsed, the expected remaining wait is **~`r round(median(remainDays))` days**, averaged over the full posterior of $\theta$.
 :::
 :::
 
@@ -333,9 +333,13 @@ As elapsed time grows, the conditional probability within any fixed window *incr
 
 **Key Findings:**
 
-**Q1.** Given `r round(xDay)` days since the last M8+ earthquake, the conditional expected remaining wait is **~`r round(mean(remainDays))` days** (95% CI: `r round(quantile(remainDays, 0.025))` - `r round(quantile(remainDays, 0.975))` days).
+**Q1.** Given `r round(xDay)` days since the last M8+ earthquake, the conditional expected remaining wait is **~`r round(median(remainDays))` days** (95% CI: `r round(quantile(remainDays, 0.025))` - `r round(quantile(remainDays, 0.975))` days).
 
 **Q2.** The conditional probability of an M8+ earthquake within one year from today is approximately `r round(probs[which(daysCheck == 365)] * 100, 1)`%, rising to `r round(probs[which(daysCheck == 730)] * 100, 1)`% within two years, reflecting the increasing hazard of the Gamma(2, $\theta$) model.
+
+&nbsp;
+
+For more details of the mathematical calculation for the research questions, please refer to the calculation pdf in the project package. 
 
 &nbsp;
 
