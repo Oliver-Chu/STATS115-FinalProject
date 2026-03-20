@@ -173,6 +173,7 @@ ggplot(df_remain, aes(x = days)) +
 
 ```{r posterior prediction}
 #this is graph is prediction interval relative to last earthquake that happened
+#not included in the presentation, but used more for a sanity check (since this does not directly answer the proposed conditional question)
 check_sim <- as.data.frame(simulation)
 check_sim <- check_sim %>%
   mutate(y_predict = rgamma(n = n(), shape = 2, rate = theta))
